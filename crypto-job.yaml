@@ -1,0 +1,28 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: crypto-tracker
+  namespace: default
+spec:
+  schedule: "*/30 * * * *"     # runs every 30 minutes
+  concurrencyPolicy: Forbid    # skip a run if previous one is still going
+  successfulJobsHistoryLimit: 10
+  failedJobsHistoryLimit: 10
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: crypto-tracker
+              image: ghcr.io/mauriciotorres-ds/crypto-tracker:latest
+              imagePullPolicy: Always
+              env:
+                - name: DYNAMODB_TABLE
+                  value: "crypto-tracking"
+
+                - name: S3_BUCKET
+                  value: "iss-tracking-data"
+
+                - name: AWS_REGION
+                  value: "us-east-1"
