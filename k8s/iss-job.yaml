@@ -1,0 +1,28 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: iss-tracker
+  namespace: default
+spec:
+  schedule: "*/15 * * * *"     # runs every 15 minutes
+  concurrencyPolicy: Forbid    # skip a run if the previous one is still going
+  successfulJobsHistoryLimit: 10
+  failedJobsHistoryLimit: 10
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: iss-tracker
+              image: ghcr.io/nmagee/iss-reboost:latest
+              imagePullPolicy: Always
+              env:
+                - name: DYNAMODB_TABLE
+                  value: "iss-tracking"
+
+                - name: S3_BUCKET
+                  value: "your-bucket-name"
+
+                - name: AWS_REGION
+                  value: "us-east-1"
